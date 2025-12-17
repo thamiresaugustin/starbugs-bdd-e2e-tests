@@ -11,28 +11,34 @@ Dado('que estou na página principal da Starbugs') do
     visit 'https://starbugs-qa.vercel.app/'
 end
 
-Dado('que desejo comprar o café {string}') do |product_name|
-    @product_name = product_name
+Dado('que desejo comprar o seguinte produto:') do |table|
+    @product = table.rows_hash
 end
 
-Dado('que esse produto custa R$ {float}') do |product_price|
-    puts product_price
-end
-
-Dado('que o custo de entrega é de R$ {float}') do |delivery_price|
-    puts delivery_price
-end
 
 Quando('inicio a compra desse item') do
-    product = find('.coffee-item', text: @product_name)
+    product = find('.coffee-item', text: @product[:name])
     product.find('.buy-coffee').click
 end
 
 Então('devo ver a página do Checkout com os detalhes do produto') do
     product_title = find('.item-details h1')
-    expect(product_title.text). to eql @product_name
+    expect(product_title.text).to eql @product[:name]
+
+    sub_price = find('.subtotal .sub-price')
+    expect(sub_price.text).to eql @product[:price]
+
+    delivery = find('.delivery-price')
+    expect(delivery.text).to eql @product[:delivery]
 end
 
-Então('o valor total da compra deve ser de R$ {float}') do |float|
-  pending # Write code here that turns the phrase above into concrete actions
+Então('o valor total da compra deve ser de {string}') do |total_price|
+    price = find('.total-price')
+    expect(price.text).to eql total_price
 end
+
+Então('devo ver um popup informando que o produto está indisponível') do
+    popup = find('.swal2-html-container')
+    expect(popup.text).to eql 'Produto indisponível'
+end
+
